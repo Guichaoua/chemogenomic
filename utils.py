@@ -9,6 +9,29 @@ from sklearn import metrics
 from rdkit import Chem, DataStructs, RDConfig
 from rdkit.Chem import AllChem
 
+def load_data():
+    dir = "/Users/gguichaoua/Dropbox/gwenn/these/Cluster/data/drugbank_v5.1.5/Sh/Sh_base/preprocessed/"
+    # make a dataframe of the interactions
+    Sh_base_list_interactions = pickle.load(open(dir+'Sh_base_list_interactions.data', 'rb'))
+    df = pd.DataFrame(Sh_base_list_interactions, columns=['uniprot', 'DBid'])
+    # add to df the smiles and th indice of the ligand
+    Sh_base_dict_ind2mol = pickle.load(open(dir+'Sh_base_dict_ind2mol.data', 'rb'))
+    Sh_base_dict_mol2ind = pickle.load(open(dir+'Sh_base_dict_mol2ind.data', 'rb'))
+    Sh_base_dict_DBid2smiles = pickle.load(open(dir+'Sh_base_dict_DBid2smiles.data', 'rb'))
+    df['smiles'] = df['DBid'].map(Sh_base_dict_DBid2smiles)
+    df['ind2mol'] = df['DBid'].map(Sh_base_dict_mol2ind)
+    # add to df the fasta and indice of the protein
+    Sh_base_dict_ind2prot = pickle.load(open(dir+'Sh_base_dict_ind2prot.data', 'rb'))
+    Sh_base_dict_prot2ind = pickle.load(open(dir+'Sh_base_dict_prot2ind.data', 'rb'))
+    Sh_base_dict_uniprot2fasta = pickle.load(open(dir+'Sh_base_dict_uniprot2fasta.data', 'rb'))
+    # add to dbid the smiles of the ligand
+    df['fasta'] = df['uniprot'].map(Sh_base_dict_uniprot2fasta)
+    df['ind2prot'] = df['uniprot'].map(Sh_base_dict_prot2ind)
+
+    df['inter'] = 1
+    # Return data
+    return df
+
 def load_small_data_set(n,choice):
     # load data
     df = pd.read_csv('data/Consensus_CompoundBioactivity_Dataset_v1.1_Sh_all.csv',low_memory=False)
@@ -275,9 +298,13 @@ def make_train_test(df,nb_folds,p):
       print("test", test.shape)
       with open('data/test.data', 'wb') as f:
         pickle.dump(test, f)
-      exit()
+
 
   print("Train/test datasets prepared.")
+  with open('data/train_arr.data', 'wb') as f:
+    pickle.dump(all_train_interactions_arr, f)
+  with open('data/test_arr.data', 'wb') as f:
+    pickle.dump(all_test_interactions_arr, f)
   return all_train_interactions_arr, all_test_interactions_arr
 
 
