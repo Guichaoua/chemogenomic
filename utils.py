@@ -34,6 +34,7 @@ def load_data():
     # Return data
     return df
 
+
 def load_small_data_set(n,choice):
     # load data
     df = pd.read_csv('data/Consensus_CompoundBioactivity_Dataset_v1.1_Sh_all.csv',low_memory=False)
@@ -162,7 +163,11 @@ def make_train_test(df,nb_folds,p):
   """
 
   # algo Matthieu corrected
-  intMat = df.pivot(index='indfasta', columns="indsmiles", values='score').to_numpy(dtype=np.float16)
+  try : 
+    intMat = df.pivot(index='indfasta', columns="indsmiles", values='score').to_numpy(dtype=np.float16)
+  except:
+    intMat = df.pivot_table(index='indfasta', columns="indsmiles", values='score').to_numpy(dtype=np.float16)
+
 
   # Set the different folds
   skf_positive = model_selection.KFold(shuffle=True, n_splits=nb_folds)
@@ -309,8 +314,10 @@ def make_train_test_mol_orphan(df,nb_folds):
     the molecules in the test set are not in the train set
   """
 
-  # algo Matthieu corrected
-  intMat = df.pivot(index='indfasta', columns="indsmiles", values='score').to_numpy(dtype=np.float16)
+  try : 
+    intMat = df.pivot(index='indfasta', columns="indsmiles", values='score').to_numpy(dtype=np.float16)
+  except:
+    intMat = df.pivot_table(index='indfasta', columns="indsmiles", values='score').to_numpy(dtype=np.float16)
 
   # Set the different folds
 
@@ -462,8 +469,10 @@ def make_train_test_prot_orphan(df,nb_folds):
     the proteins in the test set are not in the train set
   """
 
-  # algo Matthieu corrected
-  intMat = df.pivot(index='indfasta', columns="indsmiles", values='score').to_numpy(dtype=np.float16)
+  try : 
+    intMat = df.pivot(index='indfasta', columns="indsmiles", values='score').to_numpy(dtype=np.float16)
+  except:
+    intMat = df.pivot_table(index='indfasta', columns="indsmiles", values='score').to_numpy(dtype=np.float16)
 
   # Set the different folds
 
@@ -614,7 +623,11 @@ def make_train_test_prot_mol_orphan(df,nb_folds):
     make train and test sets
     the proteins and the mol in the test set are not in the train set
     """
-    intMat = df.pivot(index='indfasta', columns="indsmiles", values='score').to_numpy(dtype=np.float16)
+    try : 
+        intMat = df.pivot(index='indfasta', columns="indsmiles", values='score').to_numpy(dtype=np.float16)
+    except:
+        intMat = df.pivot_table(index='indfasta', columns="indsmiles", values='score').to_numpy(dtype=np.float16)
+
     n_p,n_m = intMat.shape
     Ip, Jm = np.where(intMat==1)
 
@@ -715,6 +728,8 @@ def make_train_test_prot_mol_orphan(df,nb_folds):
             train = np.concatenate((train,B))
 
         train = train[1:]
+        with open('data/train_prot_mol_orphan.data', 'wb') as f:
+            pickle.dump(train, f)
         all_train_interactions_arr.append(train)
         print("train", train.shape)
 
@@ -760,7 +775,8 @@ def make_train_test_prot_mol_orphan(df,nb_folds):
         # we remove the interactions in test that are in train
         I = [i for i,elt in enumerate(test) for x in train if elt[0]==x[0] or elt[1]==x[1]]
         test =np.delete(test, list(set(I)) ,axis = 0)
-
+        with open('data/test_prot_mol_orphan.data', 'wb') as f:
+            pickle.dump(test, f)
         all_test_interactions_arr.append(test)
         print("test", test.shape)
 
